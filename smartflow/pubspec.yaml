@@ -1,0 +1,37 @@
+name: smartflow
+description: An IoT-Based Smart Irrigation System
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.1.0-163.1.beta <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  animated_text_kit: ^4.2.2
+  flutter_gif: ^0.0.4
+  syncfusion_flutter_charts: ^22.1.37
+  curved_nav_bar: ^0.0.2
+  go_router: ^9.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/gifs/
+    - assets/logo/
+
+flutter_assets:
+  assets_path: assets/
+  output_path: lib/
+  filename: assets.dart
