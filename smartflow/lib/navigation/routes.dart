@@ -4,7 +4,7 @@ import 'package:smartflow/navigation/config.dart';
 import 'package:smartflow/screens/home_screen.dart';
 import 'package:smartflow/screens/irrigate_screen.dart';
 import 'package:smartflow/screens/loading_screen.dart';
-import 'package:smartflow/screens/setup.dart';
+import 'package:smartflow/screens/setup_screen.dart';
 
 class AppRouter {
   GoRouter router = GoRouter(

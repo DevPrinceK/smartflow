@@ -1,6 +1,10 @@
 class Assets {
   Assets._();
   
+  /// Assets for assetsGifsIrrigating
+  /// assets/gifs/irrigating.gif
+  static const String assetsGifsIrrigating = "assets/gifs/irrigating.gif";
+
   /// Assets for assetsGifsPlant
   /// assets/gifs/plant.gif
   static const String assetsGifsPlant = "assets/gifs/plant.gif";

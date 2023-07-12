@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:smartflow/assets.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:smartflow/navigation/config.dart';
-import 'dart:async';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -28,7 +27,12 @@ class _LoadingScreenState extends State<LoadingScreen>
         period: const Duration(milliseconds: 1000),
       );
     });
-    // Timer(const Duration(seconds: 2), () {});
+  }
+
+  @override
+  dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,7 +51,7 @@ class _LoadingScreenState extends State<LoadingScreen>
     );
 
     return Scaffold(
-      backgroundColor: Colors.lightGreen,
+      backgroundColor: Colors.green,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -77,7 +81,7 @@ class _LoadingScreenState extends State<LoadingScreen>
             child: ElevatedButton(
               child: const Text('Home'),
               onPressed: () {
-                GoRouter.of(context).pushNamed(RouteNames.home);
+                GoRouter.of(context).pushReplacementNamed(RouteNames.home);
               },
             ),
           )
