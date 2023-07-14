@@ -1,5 +1,8 @@
-// ignore_for_file: sized_box_for_whitespace
+// ignore_for_file: sized_box_for_whitespace, avoid_print
 
+import 'dart:async';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gif/flutter_gif.dart';
 import 'package:smartflow/assets.dart';
@@ -23,7 +26,19 @@ class _IrrigateScreenState extends State<IrrigateScreen>
   String cantStatus = "Irrigating";
   String cantRemarks = "Can't Irrigate";
 
+  // current variables
+  String currentTemperature = "0";
+  String currentHumidity = "0";
+  String currentMoisture = "0";
+  String currentCrop = '';
+  String currentGrowthStage = '';
+
   late FlutterGifController controller;
+  late StreamSubscription<dynamic> temperatureSubscription;
+  late StreamSubscription<dynamic> humiditySubscription;
+  late StreamSubscription<dynamic> moistureSubscription;
+
+  // StreamSubscription
 
   @override
   void initState() {
@@ -35,6 +50,36 @@ class _IrrigateScreenState extends State<IrrigateScreen>
         max: 9,
         period: const Duration(milliseconds: 1000),
       );
+    });
+
+    // temperature reference - realtime database
+    DatabaseReference tempRef =
+        FirebaseDatabase.instance.ref().child('temperature');
+    temperatureSubscription = tempRef.onValue.listen((event) {
+      setState(() {
+        currentTemperature = event.snapshot.value.toString();
+      });
+      print("Current temperature: ${event.snapshot.value.toString()}");
+    });
+
+    // humidity reference - realtime database
+    DatabaseReference humRef =
+        FirebaseDatabase.instance.ref().child('humidity');
+    humiditySubscription = humRef.onValue.listen((event) {
+      setState(() {
+        currentHumidity = event.snapshot.value.toString();
+      });
+      print("Current Humidity: ${event.snapshot.value.toString()}");
+    });
+
+    // soil moisture reference - realtime database
+    DatabaseReference moistRef =
+        FirebaseDatabase.instance.ref().child('moisture');
+    moistureSubscription = moistRef.onValue.listen((event) {
+      setState(() {
+        currentMoisture = event.snapshot.value.toString();
+      });
+      print("Current Moisture: ${event.snapshot.value.toString()}");
     });
   }
 
@@ -70,66 +115,67 @@ class _IrrigateScreenState extends State<IrrigateScreen>
                 ),
                 Container(
                   width: double.infinity,
-                  child: const Card(
+                  child: Card(
                     color: Colors.greenAccent,
                     elevation: 5,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Text(
+                              const Text(
                                 "Temperature",
                                 style: TextStyle(fontSize: 16),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Text(
-                                "80%",
-                                style: TextStyle(
+                                "$currentTemperature°C",
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
-                              Text(
+                              const Text(
                                 "Humidity",
                                 style: TextStyle(fontSize: 16),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Text(
-                                "70%",
-                                style: TextStyle(
+                                "$currentHumidity%",
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
-                              Text(
+                              const Text(
                                 "Soil Moisture",
                                 style: TextStyle(fontSize: 16),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Text(
-                                "90%",
-                                style: TextStyle(
+                                "$currentMoisture%",
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
@@ -145,49 +191,50 @@ class _IrrigateScreenState extends State<IrrigateScreen>
                 ),
                 Container(
                   width: double.infinity,
-                  child: const Card(
+                  child: Card(
                     color: Colors.greenAccent,
                     elevation: 5,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Text(
+                              const Text(
                                 "Crop",
                                 style: TextStyle(fontSize: 16),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Text(
-                                "Lettuce",
-                                style: TextStyle(
+                                currentCrop,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
-                              Text(
+                              const Text(
                                 "Growth Stage",
                                 style: TextStyle(fontSize: 16),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               Text(
-                                "Stage 1",
-                                style: TextStyle(
+                                currentGrowthStage,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                         ],
                       ),
                     ),

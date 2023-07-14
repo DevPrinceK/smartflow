@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "517900042843",
+    "firebase_url": "https://smartflow-f427f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "smartflow-f427f",
+    "storage_bucket": "smartflow-f427f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:517900042843:android:c417cab829e28b6713757e",
+        "android_client_info": {
+          "package_name": "com.example.smartflow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "517900042843-55799ime60smiahft547k12nlcbgnbci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbo-lemfFBzW8GYpVZR0J2sub4TSWYoWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "517900042843-55799ime60smiahft547k12nlcbgnbci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

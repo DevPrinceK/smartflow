@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gif/flutter_gif.dart';
 import 'package:go_router/go_router.dart';
-import 'package:smartflow/assets.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:smartflow/navigation/config.dart';
 
@@ -12,27 +10,13 @@ class LoadingScreen extends StatefulWidget {
   State<LoadingScreen> createState() => _LoadingScreenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen>
-    with TickerProviderStateMixin {
-  late FlutterGifController controller;
-
+class _LoadingScreenState extends State<LoadingScreen> {
   @override
   void initState() {
     super.initState();
-    controller = FlutterGifController(vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.repeat(
-        min: 0,
-        max: 53,
-        period: const Duration(milliseconds: 1000),
-      );
+    Future.delayed(const Duration(seconds: 4), () {
+      GoRouter.of(context).pushReplacementNamed(RouteNames.home);
     });
-  }
-
-  @override
-  dispose() {
-    controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -51,42 +35,61 @@ class _LoadingScreenState extends State<LoadingScreen>
     );
 
     return Scaffold(
-      backgroundColor: Colors.green,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GifImage(
-            image: const AssetImage(Assets.assetsGifsTaco),
-            // image: const AssetImage(Assets.assetsGifsTomatoes),
-            controller: controller,
-          ),
-          const SizedBox(height: 20),
-          Center(
-            child: AnimatedTextKit(
+        backgroundColor: Colors.green,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: AnimatedTextKit(
+                repeatForever: true,
+                animatedTexts: [
+                  ColorizeAnimatedText('SmartFlow',
+                      textStyle: colorizeTextStyle,
+                      colors: colorizeColors,
+                      speed: const Duration(milliseconds: 400)),
+                ],
+                isRepeatingAnimation: true,
+                onTap: () {},
+              ),
+            ),
+            Center(
+                child: AnimatedTextKit(
               animatedTexts: [
-                ColorizeAnimatedText(
-                  'SmartFlow',
-                  textStyle: colorizeTextStyle,
-                  colors: colorizeColors,
+                TypewriterAnimatedText(
+                  'The IoT-Based Smart Irrigation System',
+                  textStyle: const TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  speed: const Duration(milliseconds: 50),
                 ),
               ],
-              isRepeatingAnimation: true,
-              onTap: () {
-                // print("Tap Event");
-              },
-            ),
-          ),
-          Center(
-            child: ElevatedButton(
-              child: const Text('Home'),
-              onPressed: () {
-                GoRouter.of(context).pushReplacementNamed(RouteNames.home);
-              },
-            ),
-          )
-        ],
-      ),
-    );
+              totalRepeatCount: 4,
+              pause: const Duration(milliseconds: 1000),
+              displayFullTextOnTap: true,
+              stopPauseOnTap: true,
+            )),
+          ],
+        ));
   }
 }
+
+
+// AnimatedTextKit(
+//   animatedTexts: [
+//     TypewriterAnimatedText(
+//       'Hello world!',
+//       textStyle: const TextStyle(
+//         fontSize: 32.0,
+//         fontWeight: FontWeight.bold,
+//       ),
+//       speed: const Duration(milliseconds: 2000),
+//     ),
+//   ],
+  
+//   totalRepeatCount: 4,
+//   pause: const Duration(milliseconds: 1000),
+//   displayFullTextOnTap: true,
+//   stopPauseOnTap: true,
+// )

@@ -18,6 +18,8 @@ dependencies:
   syncfusion_flutter_gauges: ^22.1.37
   curved_nav_bar: ^0.0.2
   go_router: ^9.0.3
+  firebase_core: ^2.14.0
+  firebase_database: ^10.2.3
 
 dev_dependencies:
   flutter_test:
