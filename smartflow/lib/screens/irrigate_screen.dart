@@ -18,6 +18,7 @@ class IrrigateScreen extends StatefulWidget {
 class _IrrigateScreenState extends State<IrrigateScreen>
     with TickerProviderStateMixin {
   bool canIrrigate = true;
+  bool irrigate = false;
   String canButtonText = "Irrigate";
   String canStatus = "Not Irrigating";
   String canRemarks = "Can Irrigate";
@@ -37,6 +38,9 @@ class _IrrigateScreenState extends State<IrrigateScreen>
   late StreamSubscription<dynamic> temperatureSubscription;
   late StreamSubscription<dynamic> humiditySubscription;
   late StreamSubscription<dynamic> moistureSubscription;
+  late StreamSubscription<dynamic> cropSubscription;
+  late StreamSubscription<dynamic> growthSubscription;
+  late StreamSubscription<dynamic> irrigateSubscription;
 
   // StreamSubscription
 
@@ -59,7 +63,7 @@ class _IrrigateScreenState extends State<IrrigateScreen>
       setState(() {
         currentTemperature = event.snapshot.value.toString();
       });
-      print("Current temperature: ${event.snapshot.value.toString()}");
+      print("Current Temperature: ${event.snapshot.value.toString()}");
     });
 
     // humidity reference - realtime database
@@ -81,12 +85,48 @@ class _IrrigateScreenState extends State<IrrigateScreen>
       });
       print("Current Moisture: ${event.snapshot.value.toString()}");
     });
+
+    // crop reference - realtime database
+    DatabaseReference cropRef = FirebaseDatabase.instance.ref().child('crop');
+    cropSubscription = cropRef.onValue.listen((event) {
+      setState(() {
+        currentCrop = event.snapshot.value.toString();
+      });
+      print("Current Crop: ${event.snapshot.value.toString()}");
+    });
+
+    // crop reference - realtime database
+    DatabaseReference cropGrowthRef =
+        FirebaseDatabase.instance.ref().child('stage');
+    growthSubscription = cropGrowthRef.onValue.listen((event) {
+      setState(() {
+        currentGrowthStage = event.snapshot.value.toString();
+      });
+      print("Current Growth Stage: ${event.snapshot.value.toString()}");
+    });
+
+    // can irrigate reference - realtime database
+    DatabaseReference irrigateRef =
+        FirebaseDatabase.instance.ref().child('irrigate');
+    irrigateSubscription = irrigateRef.onValue.listen((event) {
+      setState(() {
+        irrigate = event.snapshot.value.toString() == "true" ? true : false;
+      });
+      print("Irrigate: ${event.snapshot.value.toString()}");
+    });
   }
 
   @override
   dispose() {
     controller.dispose();
     super.dispose();
+    // cancel all subscriptions
+    temperatureSubscription.cancel();
+    humiditySubscription.cancel();
+    moistureSubscription.cancel();
+    cropSubscription.cancel();
+    growthSubscription.cancel();
+    irrigateSubscription.cancel();
   }
 
   @override
@@ -319,6 +359,9 @@ class _IrrigateScreenState extends State<IrrigateScreen>
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      DatabaseReference irrigateRef =
+                          FirebaseDatabase.instance.ref().child('irrigate');
+                      irrigateRef.set(!irrigate);
                       setState(() {
                         canIrrigate = !canIrrigate;
                       });
