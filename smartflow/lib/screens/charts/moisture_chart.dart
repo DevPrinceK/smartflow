@@ -1,9 +1,54 @@
+// ignore_for_file: avoid_print
+
+import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-class MoistureChart extends StatelessWidget {
-  final List<MoistureData> moistureData;
-  const MoistureChart({super.key, required this.moistureData});
+class MoistureChart extends StatefulWidget {
+  const MoistureChart({super.key});
+
+  @override
+  State<MoistureChart> createState() => _MoistureChartState();
+}
+
+class _MoistureChartState extends State<MoistureChart> {
+  Map<dynamic, dynamic> last6Moistures = {};
+  List<MoistureData> moistureData = [];
+  // subscription
+  late StreamSubscription<DatabaseEvent> moistureSubscription;
+
+  List<MoistureData> convertMapToList(Map<dynamic, dynamic> moistureMap) {
+    List<MoistureData> resultList = [];
+    moistureMap.forEach((key, value) {
+      print("Key: $key, Value: $value");
+      resultList.add(MoistureData(
+          location: key.toString(), moistureLevel: value.toDouble()));
+    });
+    return resultList;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Get last 6 moistures
+    DatabaseReference moistRef =
+        FirebaseDatabase.instance.ref().child('bulkMoisture');
+    moistureSubscription = moistRef.limitToFirst(6).onValue.listen((event) {
+      setState(() {
+        last6Moistures = event.snapshot.value as Map<dynamic, dynamic>;
+        moistureData = convertMapToList(last6Moistures);
+      });
+      print("Bulk Moistures: ${event.snapshot.value as Map<dynamic, dynamic>}");
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    moistureSubscription.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
