@@ -1,3 +1,8 @@
+// ignore_for_file: avoid_print
+
+import 'dart:async';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:smartflow/screens/charts/all_charts.dart';
 import 'package:smartflow/screens/charts/humidity_chart.dart';
@@ -14,40 +19,76 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<TemperatureData> temperatureData = [
-    TemperatureData(date: '01/01/2023', temperature: 25),
-    TemperatureData(date: '01/02/2023', temperature: 27),
-    TemperatureData(date: '01/03/2023', temperature: 22),
-    TemperatureData(date: '01/04/2023', temperature: 29),
-    TemperatureData(date: '01/05/2023', temperature: 30),
-    TemperatureData(date: '01/06/2023', temperature: 23),
-    // Add more temperature data here...
-  ];
-
-  final List<MoistureData> moistureData = [
-    MoistureData(location: 'Location 1', moistureLevel: 50),
-    MoistureData(location: 'Location 2', moistureLevel: 70),
-    MoistureData(location: 'Location 3', moistureLevel: 60),
-    MoistureData(location: 'Location 4', moistureLevel: 50),
-    MoistureData(location: 'Location 5', moistureLevel: 70),
-    MoistureData(location: 'Location 6', moistureLevel: 60),
-    // Add more soil moisture data here...
-  ];
-
-  final List<HumidityData> humidityData = [
-    HumidityData(label: 'Humidity 1', humidity: 75),
-    HumidityData(label: 'Humidity 2', humidity: 85),
-    HumidityData(label: 'Humidity 3', humidity: 72),
-    HumidityData(label: 'Humidity 4', humidity: 79),
-    HumidityData(label: 'Humidity 5', humidity: 80),
-    HumidityData(label: 'Humidity 6', humidity: 70),
-  ];
-
+  // current variables
+  String currentTemperature = "0";
+  String currentHumidity = "0";
+  String currentMoisture = "0";
+  // subscriptions
+  late StreamSubscription<dynamic> temperatureSubscription;
+  late StreamSubscription<dynamic> humiditySubscription;
+  late StreamSubscription<dynamic> moistureSubscription;
+  // all data - temp, humidity, moisture
   final List<AllData> allData = [
-    AllData(label: 'Moisture', val: 75),
+    AllData(label: 'Moisture', val: 50),
     AllData(label: 'Humidity', val: 85),
     AllData(label: 'Temperature', val: 72),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // temperature reference - realtime database
+    DatabaseReference tempRef =
+        FirebaseDatabase.instance.ref().child('temperature');
+    temperatureSubscription = tempRef.onValue.listen((event) {
+      setState(() {
+        currentTemperature = event.snapshot.value.toString();
+        // Find the 'Temperature' object in allData and update its value
+        int temperatureIndex =
+            allData.indexWhere((data) => data.label == 'Temperature');
+        if (temperatureIndex != -1) {
+          allData[temperatureIndex] = AllData(
+              label: 'Temperature', val: double.parse(currentTemperature));
+        }
+      });
+      print("Current Temperature: ${event.snapshot.value.toString()}");
+    });
+
+    // humidity reference - realtime database
+    DatabaseReference humRef =
+        FirebaseDatabase.instance.ref().child('humidity');
+    humiditySubscription = humRef.onValue.listen((event) {
+      setState(() {
+        currentHumidity = event.snapshot.value.toString();
+        // Find the 'Humidity' object in allData and update its value
+        int humidityIndex =
+            allData.indexWhere((data) => data.label == 'Humidity');
+        if (humidityIndex != -1) {
+          allData[humidityIndex] =
+              AllData(label: 'Humidity', val: double.parse(currentHumidity));
+        }
+      });
+      print("Current Humidity: ${event.snapshot.value.toString()}");
+    });
+
+    // soil moisture reference - realtime database
+    DatabaseReference moistRef =
+        FirebaseDatabase.instance.ref().child('moisture');
+    moistureSubscription = moistRef.onValue.listen((event) {
+      setState(() {
+        currentMoisture = event.snapshot.value.toString();
+        // Find the 'Moisture' object in allData and update its value
+        int moistureIndex =
+            allData.indexWhere((data) => data.label == 'Moisture');
+        if (moistureIndex != -1) {
+          allData[moistureIndex] =
+              AllData(label: 'Moisture', val: double.parse(currentMoisture));
+        }
+      });
+      print("Current Moisture: ${event.snapshot.value.toString()}");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
         body: TabBarView(
           children: [
             GeneralTab(currentChart: AllCharts(allData: allData)),
-            GeneralTab(currentChart: MoistureChart(moistureData: moistureData)),
-            GeneralTab(
-                currentChart:
-                    TemperatureChart(temperatureData: temperatureData)),
-            GeneralTab(currentChart: HumidityChart(humidityData: humidityData)),
+            const GeneralTab(currentChart: MoistureChart()),
+            const GeneralTab(currentChart: TemperatureChart()),
+            const GeneralTab(currentChart: HumidityChart()),
           ],
         ),
         bottomNavigationBar: CustomBottomNav(selectedTab: 0),
