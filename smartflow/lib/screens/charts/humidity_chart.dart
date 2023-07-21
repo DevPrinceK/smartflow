@@ -1,9 +1,49 @@
+// ignore_for_file: avoid_print
+
+import 'dart:async';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-class HumidityChart extends StatelessWidget {
-  final List<HumidityData> humidityData;
-  const HumidityChart({super.key, required this.humidityData});
+class HumidityChart extends StatefulWidget {
+  const HumidityChart({super.key});
+
+  @override
+  State<HumidityChart> createState() => _HumidityChartState();
+}
+
+class _HumidityChartState extends State<HumidityChart> {
+  Map<dynamic, dynamic> last6Humiditys = {};
+  List<HumidityData> humidityData = [];
+  // subscriptions
+  late StreamSubscription<DatabaseEvent> humiditySubscription;
+
+  List<HumidityData> convertMapToList(Map<dynamic, dynamic> temperatureMap) {
+    List<HumidityData> resultList = [];
+    temperatureMap.forEach((key, value) {
+      print("Key: $key, Value: $value");
+      resultList
+          .add(HumidityData(label: key.toString(), humidity: value.toDouble()));
+    });
+    return resultList;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Get last 6 moistures
+    DatabaseReference humRef =
+        FirebaseDatabase.instance.ref().child('bulkHumidity');
+    humiditySubscription = humRef.limitToLast(6).onValue.listen((event) {
+      setState(() {
+        last6Humiditys = event.snapshot.value as Map<dynamic, dynamic>;
+        humidityData = convertMapToList(last6Humiditys);
+      });
+      print("Bulk Humidity: ${event.snapshot.value as Map<dynamic, dynamic>}");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
