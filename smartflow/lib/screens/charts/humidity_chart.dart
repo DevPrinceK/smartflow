@@ -14,8 +14,8 @@ class HumidityChart extends StatefulWidget {
 }
 
 class _HumidityChartState extends State<HumidityChart> {
-  Map<dynamic, dynamic> last6Humiditys = {};
   List<HumidityData> humidityData = [];
+  Map<dynamic, dynamic> data = {};
   // subscriptions
   late StreamSubscription<DatabaseEvent> humiditySubscription;
 
@@ -33,16 +33,54 @@ class _HumidityChartState extends State<HumidityChart> {
   void initState() {
     super.initState();
 
-    // Get last 6 moistures
-    DatabaseReference humRef =
-        FirebaseDatabase.instance.ref().child('bulkHumidity');
-    humiditySubscription = humRef.limitToLast(6).onValue.listen((event) {
+    // Get last 100 data
+    DatabaseReference dataRef = FirebaseDatabase.instance.ref().child('data');
+    humiditySubscription = dataRef.limitToLast(6).onValue.listen((event) {
       setState(() {
-        last6Humiditys = event.snapshot.value as Map<dynamic, dynamic>;
-        humidityData = convertMapToList(last6Humiditys);
+        data = event.snapshot.value as Map<dynamic, dynamic>;
       });
-      print("Bulk Humidity: ${event.snapshot.value as Map<dynamic, dynamic>}");
+      Iterable<dynamic> values = data.values;
+      List<dynamic> lstData = values.toList();
+      List<int> temps = lstData.map<int>((i) => i['temperature']).toList();
+      List<int> humids = lstData.map<int>((i) => i['humidity']).toList();
+      List<int> moists = lstData.map<int>((i) => i['moisture']).toList();
+      List<double> timestampList =
+          lstData.map<double>((i) => i['timestamp']).toList();
+
+      // time string
+      List<String> timeStrings = timestampList.map((timestamp) {
+        DateTime dateTime =
+            DateTime.fromMillisecondsSinceEpoch((timestamp * 1000).toInt());
+        String timeString =
+            "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}";
+        return timeString;
+      }).toList();
+
+      setState(() {
+        humidityData = [
+          HumidityData(label: timeStrings[0], humidity: humids[0].toDouble()),
+          HumidityData(label: timeStrings[1], humidity: humids[1].toDouble()),
+          HumidityData(label: timeStrings[2], humidity: humids[2].toDouble()),
+          HumidityData(label: timeStrings[3], humidity: humids[3].toDouble()),
+          HumidityData(label: timeStrings[4], humidity: humids[4].toDouble()),
+          HumidityData(label: timeStrings[5], humidity: humids[5].toDouble()),
+        ];
+      });
+
+      // print("Data Response: ${event.snapshot.value as Map<dynamic, dynamic>}");
+      print("Data Response: $data");
+      print("Temps: $temps");
+      print("Humids: $humids");
+      print("Moists: $moists");
+      print("Timestamps: $timestampList");
+      print("TimeStrings: $timeStrings");
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    humiditySubscription.cancel();
   }
 
   @override
