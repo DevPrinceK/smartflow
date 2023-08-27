@@ -23,10 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String currentTemperature = "0";
   String currentHumidity = "0";
   String currentMoisture = "0";
+  Map<dynamic, dynamic> data = {};
   // subscriptions
-  late StreamSubscription<dynamic> temperatureSubscription;
-  late StreamSubscription<dynamic> humiditySubscription;
-  late StreamSubscription<dynamic> moistureSubscription;
+  late StreamSubscription<dynamic> dataSubscription;
   // all data - temp, humidity, moisture
   final List<AllData> allData = [
     AllData(label: 'Moisture', val: 50),
@@ -38,90 +37,78 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // temperature reference - realtime database
-    DatabaseReference tempRef =
-        FirebaseDatabase.instance.ref().child('temperature');
-    temperatureSubscription = tempRef.onValue.listen((event) {
+    // all data reference - realtime database
+    DatabaseReference dataRef = FirebaseDatabase.instance.ref().child('data');
+    dataSubscription = dataRef.limitToLast(2).onValue.listen((event) {
       setState(() {
-        currentTemperature = event.snapshot.value.toString();
-        // Find the 'Temperature' object in allData and update its value
-        int temperatureIndex =
-            allData.indexWhere((data) => data.label == 'Temperature');
-        if (temperatureIndex != -1) {
-          allData[temperatureIndex] = AllData(
-              label: 'Temperature', val: double.parse(currentTemperature));
-        }
+        data = event.snapshot.value as Map<dynamic, dynamic>;
       });
-      print("Current Temperature: ${event.snapshot.value.toString()}");
-    });
 
-    // humidity reference - realtime database
-    DatabaseReference humRef =
-        FirebaseDatabase.instance.ref().child('humidity');
-    humiditySubscription = humRef.onValue.listen((event) {
-      setState(() {
-        currentHumidity = event.snapshot.value.toString();
-        // Find the 'Humidity' object in allData and update its value
-        int humidityIndex =
-            allData.indexWhere((data) => data.label == 'Humidity');
-        if (humidityIndex != -1) {
-          allData[humidityIndex] =
-              AllData(label: 'Humidity', val: double.parse(currentHumidity));
-        }
-      });
-      print("Current Humidity: ${event.snapshot.value.toString()}");
-    });
+      //
+      Iterable<dynamic> values = data.values;
+      List<dynamic> lstData = values.toList();
+      List<int> temps = lstData.map<int>((i) => i['temperature']).toList();
+      List<int> moist = lstData.map<int>((i) => i['moisture']).toList();
+      List<int> hum = lstData.map<int>((i) => i['humidity']).toList();
 
-    // soil moisture reference - realtime database
-    DatabaseReference moistRef =
-        FirebaseDatabase.instance.ref().child('moisture');
-    moistureSubscription = moistRef.onValue.listen((event) {
+      // Find the 'Temperature' object in allData and update its value
+      int temperatureIndex =
+          allData.indexWhere((data) => data.label == 'Temperature');
+      int humidityIndex =
+          allData.indexWhere((data) => data.label == 'Humidity');
+      int moistureIndex =
+          allData.indexWhere((data) => data.label == 'Moisture');
       setState(() {
-        currentMoisture = event.snapshot.value.toString();
-        // Find the 'Moisture' object in allData and update its value
-        int moistureIndex =
-            allData.indexWhere((data) => data.label == 'Moisture');
-        if (moistureIndex != -1) {
-          allData[moistureIndex] =
-              AllData(label: 'Moisture', val: double.parse(currentMoisture));
-        }
+        allData[temperatureIndex] =
+            AllData(label: 'Temperature', val: temps[0].toDouble());
+        allData[humidityIndex] =
+            AllData(label: 'Humidity', val: hum[0].toDouble());
+        allData[moistureIndex] =
+            AllData(label: 'Moisture', val: moist[0].toDouble());
       });
-      print("Current Moisture: ${event.snapshot.value.toString()}");
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    dataSubscription.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 4,
-      child: Scaffold(
-        backgroundColor: Colors.greenAccent,
-        appBar: AppBar(
-          title: const Text("SmartFlow"),
-          centerTitle: true,
-          elevation: 0,
-          bottom: const TabBar(
-            unselectedLabelColor: Colors.black,
-            labelColor: Colors.greenAccent,
-            indicatorColor: Colors.lightGreenAccent,
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'ALL'),
-              Tab(text: 'MOISTURE'),
-              Tab(text: 'TEMPERATURE'),
-              Tab(text: 'HUMIDITY'),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.greenAccent,
+          appBar: AppBar(
+            title: const Text("SmartFlow"),
+            centerTitle: true,
+            elevation: 0,
+            bottom: const TabBar(
+              unselectedLabelColor: Colors.black,
+              labelColor: Colors.greenAccent,
+              indicatorColor: Colors.lightGreenAccent,
+              isScrollable: true,
+              tabs: [
+                Tab(text: 'ALL'),
+                Tab(text: 'MOISTURE'),
+                Tab(text: 'TEMPERATURE'),
+                Tab(text: 'HUMIDITY'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              GeneralTab(currentChart: AllCharts(allData: allData)),
+              const GeneralTab(currentChart: MoistureChart()),
+              const GeneralTab(currentChart: TemperatureChart()),
+              const GeneralTab(currentChart: HumidityChart()),
             ],
           ),
+          bottomNavigationBar: CustomBottomNav(selectedTab: 0),
         ),
-        body: TabBarView(
-          children: [
-            GeneralTab(currentChart: AllCharts(allData: allData)),
-            const GeneralTab(currentChart: MoistureChart()),
-            const GeneralTab(currentChart: TemperatureChart()),
-            const GeneralTab(currentChart: HumidityChart()),
-          ],
-        ),
-        bottomNavigationBar: CustomBottomNav(selectedTab: 0),
       ),
     );
   }
