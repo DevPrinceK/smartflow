@@ -35,61 +35,44 @@ class _LoadingScreenState extends State<LoadingScreen> {
     );
 
     return Scaffold(
-        backgroundColor: Colors.green,
+        // backgroundColor: Colors.green,
         body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child: AnimatedTextKit(
-                repeatForever: true,
-                animatedTexts: [
-                  ColorizeAnimatedText('SmartFlow',
-                      textStyle: colorizeTextStyle,
-                      colors: colorizeColors,
-                      speed: const Duration(milliseconds: 400)),
-                ],
-                isRepeatingAnimation: true,
-                onTap: () {},
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Center(
+          child: AnimatedTextKit(
+            repeatForever: true,
+            animatedTexts: [
+              ColorizeAnimatedText(
+                'SmartFlow',
+                textStyle: colorizeTextStyle,
+                colors: colorizeColors,
+                speed: const Duration(milliseconds: 400),
               ),
+            ],
+            isRepeatingAnimation: true,
+            onTap: () {},
+          ),
+        ),
+        Center(
+            child: AnimatedTextKit(
+          animatedTexts: [
+            TypewriterAnimatedText(
+              'The IoT-Based Smart Irrigation System',
+              textStyle: const TextStyle(
+                fontSize: 12.0,
+                fontWeight: FontWeight.bold,
+              ),
+              speed: const Duration(milliseconds: 50),
             ),
-            Center(
-                child: AnimatedTextKit(
-              animatedTexts: [
-                TypewriterAnimatedText(
-                  'The IoT-Based Smart Irrigation System',
-                  textStyle: const TextStyle(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  speed: const Duration(milliseconds: 50),
-                ),
-              ],
-              totalRepeatCount: 4,
-              pause: const Duration(milliseconds: 1000),
-              displayFullTextOnTap: true,
-              stopPauseOnTap: true,
-            )),
           ],
-        ));
+          totalRepeatCount: 4,
+          pause: const Duration(milliseconds: 1000),
+          displayFullTextOnTap: true,
+          stopPauseOnTap: true,
+        )),
+      ],
+    ));
   }
 }
-
-
-// AnimatedTextKit(
-//   animatedTexts: [
-//     TypewriterAnimatedText(
-//       'Hello world!',
-//       textStyle: const TextStyle(
-//         fontSize: 32.0,
-//         fontWeight: FontWeight.bold,
-//       ),
-//       speed: const Duration(milliseconds: 2000),
-//     ),
-//   ],
-  
-//   totalRepeatCount: 4,
-//   pause: const Duration(milliseconds: 1000),
-//   displayFullTextOnTap: true,
-//   stopPauseOnTap: true,
-// )
