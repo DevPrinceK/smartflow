@@ -22,45 +22,37 @@ class _GeneralTabState extends State<GeneralTab> {
   String currentMoisture = "0";
   String currentCrop = '---';
   String currentGrowthStage = '---';
+  Map<dynamic, dynamic> data = {};
   // subscriptions
   late StreamSubscription<DatabaseEvent> temperatureSubscription;
   late StreamSubscription<DatabaseEvent> humiditySubscription;
   late StreamSubscription<DatabaseEvent> moistureSubscription;
   late StreamSubscription<DatabaseEvent> cropSubscription;
   late StreamSubscription<DatabaseEvent> growthSubscription;
+  late StreamSubscription<dynamic> dataSubscription;
 
   @override
   void initState() {
     super.initState();
-
-    // temperature reference - realtime database
-    DatabaseReference tempRef =
-        FirebaseDatabase.instance.ref().child('temperature');
-    temperatureSubscription = tempRef.onValue.listen((event) {
+    // all data reference - realtime database
+    DatabaseReference dataRef = FirebaseDatabase.instance.ref().child('data');
+    dataSubscription = dataRef.limitToLast(2).onValue.listen((event) {
       setState(() {
-        currentTemperature = event.snapshot.value.toString();
+        data = event.snapshot.value as Map<dynamic, dynamic>;
       });
-      print("Current Temperature: ${event.snapshot.value.toString()}");
-    });
 
-    // humidity reference - realtime database
-    DatabaseReference humRef =
-        FirebaseDatabase.instance.ref().child('humidity');
-    humiditySubscription = humRef.onValue.listen((event) {
-      setState(() {
-        currentHumidity = event.snapshot.value.toString();
-      });
-      print("Current Humidity: ${event.snapshot.value.toString()}");
-    });
+      //
+      Iterable<dynamic> values = data.values;
+      List<dynamic> lstData = values.toList();
+      List<int> temps = lstData.map<int>((i) => i['temperature']).toList();
+      List<int> moist = lstData.map<int>((i) => i['moisture']).toList();
+      List<int> hum = lstData.map<int>((i) => i['humidity']).toList();
 
-    // soil moisture reference - realtime database
-    DatabaseReference moistRef =
-        FirebaseDatabase.instance.ref().child('moisture');
-    moistureSubscription = moistRef.onValue.listen((event) {
       setState(() {
-        currentMoisture = event.snapshot.value.toString();
+        currentTemperature = temps[0].toString();
+        currentHumidity = hum[0].toString();
+        currentMoisture = moist[0].toString();
       });
-      print("Current Moisture: ${event.snapshot.value.toString()}");
     });
 
     // crop reference - realtime database
