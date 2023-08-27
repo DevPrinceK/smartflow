@@ -14,37 +14,52 @@ class TemperatureChart extends StatefulWidget {
 }
 
 class _TemperatureChartState extends State<TemperatureChart> {
-  // last 7 of the current temperature variables - empty map
-  Map<dynamic, dynamic> last6Temperatures = {};
   List<TemperatureData> temperatureData = [];
+  Map<dynamic, dynamic> data = {};
   // subscriptions
   late StreamSubscription<DatabaseEvent> temperatureSubscription;
-
-  List<TemperatureData> convertMapToList(Map<dynamic, dynamic> temperatureMap) {
-    List<TemperatureData> resultList = [];
-    temperatureMap.forEach((key, value) {
-      print("Key: $key, Value: $value");
-      resultList.add(
-          TemperatureData(date: key.toString(), temperature: value.toDouble()));
-    });
-    return resultList;
-  }
 
   @override
   void initState() {
     super.initState();
-
-    // Get last 6 temperatures
-    DatabaseReference tempRef =
-        FirebaseDatabase.instance.ref().child('bulkTemperature');
-    temperatureSubscription = tempRef.limitToLast(6).onValue.listen((event) {
+    DatabaseReference dataRef = FirebaseDatabase.instance.ref().child('data');
+    temperatureSubscription = dataRef.limitToLast(6).onValue.listen((event) {
       setState(() {
-        last6Temperatures = event.snapshot.value as Map<dynamic, dynamic>;
-        temperatureData = convertMapToList(last6Temperatures);
+        data = event.snapshot.value as Map<dynamic, dynamic>;
       });
-      print(
-          "Bulk Temperature: ${event.snapshot.value as Map<dynamic, dynamic>}");
-      print("Temperature Data: $temperatureData");
+
+      Iterable<dynamic> values = data.values;
+      List<dynamic> lstData = values.toList();
+      List<int> temps = lstData.map<int>((i) => i['temperature']).toList();
+      List<double> timestampList =
+          lstData.map<double>((i) => i['timestamp']).toList();
+
+      // time string
+      List<String> timeStrings = timestampList.map((timestamp) {
+        DateTime dateTime =
+            DateTime.fromMillisecondsSinceEpoch((timestamp * 1000).toInt());
+        String timeString =
+            "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}";
+        return timeString;
+      }).toList();
+
+      // set new values
+      setState(() {
+        temperatureData = [
+          TemperatureData(
+              date: timeStrings[0], temperature: temps[0].toDouble()),
+          TemperatureData(
+              date: timeStrings[1], temperature: temps[1].toDouble()),
+          TemperatureData(
+              date: timeStrings[2], temperature: temps[2].toDouble()),
+          TemperatureData(
+              date: timeStrings[3], temperature: temps[3].toDouble()),
+          TemperatureData(
+              date: timeStrings[4], temperature: temps[4].toDouble()),
+          TemperatureData(
+              date: timeStrings[5], temperature: temps[5].toDouble()),
+        ];
+      });
     });
     // End of init state
   }
