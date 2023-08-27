@@ -33,6 +33,7 @@ class _IrrigateScreenState extends State<IrrigateScreen>
   String currentMoisture = "0";
   String currentCrop = '';
   String currentGrowthStage = '';
+  Map<dynamic, dynamic> data = {};
 
   late FlutterGifController controller;
   late StreamSubscription<dynamic> temperatureSubscription;
@@ -41,6 +42,7 @@ class _IrrigateScreenState extends State<IrrigateScreen>
   late StreamSubscription<dynamic> cropSubscription;
   late StreamSubscription<dynamic> growthSubscription;
   late StreamSubscription<dynamic> irrigateSubscription;
+  late StreamSubscription<dynamic> dataSubscription;
 
   // StreamSubscription
 
@@ -56,34 +58,25 @@ class _IrrigateScreenState extends State<IrrigateScreen>
       );
     });
 
-    // temperature reference - realtime database
-    DatabaseReference tempRef =
-        FirebaseDatabase.instance.ref().child('temperature');
-    temperatureSubscription = tempRef.onValue.listen((event) {
+    // all data reference - realtime database
+    DatabaseReference dataRef = FirebaseDatabase.instance.ref().child('data');
+    dataSubscription = dataRef.limitToLast(2).onValue.listen((event) {
       setState(() {
-        currentTemperature = event.snapshot.value.toString();
+        data = event.snapshot.value as Map<dynamic, dynamic>;
       });
-      print("Current Temperature: ${event.snapshot.value.toString()}");
-    });
 
-    // humidity reference - realtime database
-    DatabaseReference humRef =
-        FirebaseDatabase.instance.ref().child('humidity');
-    humiditySubscription = humRef.onValue.listen((event) {
-      setState(() {
-        currentHumidity = event.snapshot.value.toString();
-      });
-      print("Current Humidity: ${event.snapshot.value.toString()}");
-    });
+      //
+      Iterable<dynamic> values = data.values;
+      List<dynamic> lstData = values.toList();
+      List<int> temps = lstData.map<int>((i) => i['temperature']).toList();
+      List<int> moist = lstData.map<int>((i) => i['moisture']).toList();
+      List<int> hum = lstData.map<int>((i) => i['humidity']).toList();
 
-    // soil moisture reference - realtime database
-    DatabaseReference moistRef =
-        FirebaseDatabase.instance.ref().child('moisture');
-    moistureSubscription = moistRef.onValue.listen((event) {
       setState(() {
-        currentMoisture = event.snapshot.value.toString();
+        currentTemperature = temps[0].toString();
+        currentHumidity = hum[0].toString();
+        currentMoisture = moist[0].toString();
       });
-      print("Current Moisture: ${event.snapshot.value.toString()}");
     });
 
     // crop reference - realtime database
@@ -95,7 +88,7 @@ class _IrrigateScreenState extends State<IrrigateScreen>
       print("Current Crop: ${event.snapshot.value.toString()}");
     });
 
-    // crop reference - realtime database
+    // crop growth reference - realtime database
     DatabaseReference cropGrowthRef =
         FirebaseDatabase.instance.ref().child('stage');
     growthSubscription = cropGrowthRef.onValue.listen((event) {
